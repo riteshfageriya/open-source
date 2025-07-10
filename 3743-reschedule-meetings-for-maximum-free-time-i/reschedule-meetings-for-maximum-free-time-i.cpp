@@ -1,33 +1,22 @@
 class Solution {
 public:
     int maxFreeTime(int eventTime, int k, vector<int>& startTime, vector<int>& endTime) {
-        int n = startTime.size();
-        vector<int> gap(n + 1);
+        int count = startTime.size();
+        vector<int> prefixSum(count + 1, 0);
+        int maxFree = 0;
 
-        // Calculate gaps between events
-        for (int i = 1; i < n; i++) {
-            gap[i] = startTime[i] - endTime[i - 1];
-        }
-        gap[0] = startTime[0]; // before first event
-        gap[n] = eventTime - endTime[n - 1]; // after last event
-
-        // Sliding window of size k + 1
-        int i = 0, j = k;
-        int maxa = 0, sum = 0;
-
-        // Initial window sum
-        for (int w = i; w <= n && w <= j; w++) {
-            sum += gap[w];
-        }
-        maxa = max(maxa, sum);
-
-        // Slide the window
-        while (j < n) {
-            sum -= gap[i++];
-            sum += gap[++j];
-            maxa = max(maxa, sum);
+        for (int i = 0; i < count; ++i) {
+            prefixSum[i + 1] = prefixSum[i] + (endTime[i] - startTime[i]);
         }
 
-        return maxa;
+        for (int i = k - 1; i < count; ++i) {
+            int occupied = prefixSum[i + 1] - prefixSum[i - k + 1];
+            int windowEnd = (i == count - 1) ? eventTime : startTime[i + 1];
+            int windowStart = (i == k - 1) ? 0 : endTime[i - k];
+            int freeTime = windowEnd - windowStart - occupied;
+            maxFree = max(maxFree, freeTime);
+        }
+
+        return maxFree;
     }
 };
